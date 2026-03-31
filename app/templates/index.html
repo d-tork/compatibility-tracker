@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mobile Compatibility Tracker</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --color-bg: #f4f6f9;
+      --color-surface: #ffffff;
+      --color-primary: #2563eb;
+      --color-primary-hover: #1d4ed8;
+      --color-border: #e2e8f0;
+      --color-text: #1e293b;
+      --color-text-muted: #64748b;
+      --color-header-bg: #1e293b;
+      --color-header-text: #f8fafc;
+      --color-row-even: #f8fafc;
+      --color-row-hover: #eff6ff;
+      --color-highlight: #fef08a;
+      --color-sort-active: #93c5fd;
+      --radius: 8px;
+      --shadow: 0 1px 3px rgba(0,0,0,.1), 0 1px 2px rgba(0,0,0,.06);
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+                   Roboto, Helvetica, Arial, sans-serif;
+      background: var(--color-bg);
+      color: var(--color-text);
+      min-height: 100vh;
+      padding: 2rem 1rem;
+    }
+
+    header {
+      max-width: 1400px;
+      margin: 0 auto 1.5rem;
+    }
+
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--color-text);
+      margin-bottom: 0.25rem;
+    }
+
+    .subtitle {
+      color: var(--color-text-muted);
+      font-size: 0.95rem;
+    }
+
+    .search-bar-wrapper {
+      max-width: 1400px;
+      margin: 0 auto 1.25rem;
+      position: relative;
+    }
+
+    .search-icon {
+      position: absolute;
+      left: 0.875rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--color-text-muted);
+      pointer-events: none;
+    }
+
+    #search-input {
+      width: 100%;
+      padding: 0.65rem 1rem 0.65rem 2.75rem;
+      font-size: 1rem;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius);
+      background: var(--color-surface);
+      color: var(--color-text);
+      box-shadow: var(--shadow);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+    }
+
+    #search-input:focus {
+      border-color: var(--color-primary);
+      box-shadow: 0 0 0 3px rgba(37,99,235,.15);
+    }
+
+    #search-input::placeholder { color: var(--color-text-muted); }
+
+    .table-container {
+      max-width: 1400px;
+      margin: 0 auto;
+      overflow-x: auto;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      background: var(--color-surface);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    thead tr {
+      background: var(--color-header-bg);
+      color: var(--color-header-text);
+    }
+
+    th {
+      padding: 0.85rem 1rem;
+      text-align: left;
+      white-space: nowrap;
+      user-select: none;
+      cursor: pointer;
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      border-right: 1px solid rgba(255,255,255,.08);
+      transition: background 0.15s;
+    }
+
+    th:last-child { border-right: none; }
+
+    th:hover { background: rgba(255,255,255,.08); }
+
+    th[aria-sort="ascending"] { background: rgba(147,197,253,.18); }
+    th[aria-sort="descending"] { background: rgba(147,197,253,.18); }
+
+    .sort-indicator {
+      display: inline-block;
+      margin-left: 0.35rem;
+      opacity: 0.45;
+      font-size: 0.75em;
+      vertical-align: middle;
+    }
+
+    th[aria-sort] .sort-indicator { opacity: 1; }
+
+    tbody tr:nth-child(even) { background: var(--color-row-even); }
+    tbody tr:hover { background: var(--color-row-hover); }
+
+    td {
+      padding: 0.7rem 1rem;
+      border-bottom: 1px solid var(--color-border);
+      border-right: 1px solid var(--color-border);
+      vertical-align: middle;
+    }
+
+    td:last-child { border-right: none; }
+
+    .phone-name { font-weight: 600; }
+    .phone-os { font-size: 0.8rem; color: var(--color-text-muted); margin-top: 2px; }
+
+    .version-tag {
+      display: inline-block;
+      padding: 0.2rem 0.55rem;
+      border-radius: 1rem;
+      font-size: 0.78rem;
+      font-weight: 500;
+      background: #dbeafe;
+      color: #1e40af;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    }
+
+    .version-tag.unsupported {
+      background: #fee2e2;
+      color: #991b1b;
+    }
+
+    mark.search-highlight {
+      background: var(--color-highlight);
+      color: inherit;
+      border-radius: 2px;
+      padding: 0 1px;
+    }
+
+    #no-results {
+      text-align: center;
+      padding: 3rem 1rem;
+      color: var(--color-text-muted);
+      font-size: 1rem;
+      display: none;
+    }
+
+    .result-count {
+      max-width: 1400px;
+      margin: 0 auto 0.5rem;
+      font-size: 0.85rem;
+      color: var(--color-text-muted);
+      min-height: 1.25rem;
+    }
+
+    @media (max-width: 640px) {
+      h1 { font-size: 1.4rem; }
+      th, td { padding: 0.6rem 0.75rem; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📱 Mobile Compatibility Tracker</h1>
+    <p class="subtitle">Software version compatibility across mobile devices</p>
+  </header>
+
+  <div class="search-bar-wrapper">
+    <svg class="search-icon" width="18" height="18" viewBox="0 0 24 24"
+         fill="none" stroke="currentColor" stroke-width="2"
+         stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+    </svg>
+    <input
+      type="search"
+      id="search-input"
+      placeholder="Search phones, OS, software, or version…"
+      autocomplete="off"
+      aria-label="Filter compatibility table"
+    />
+  </div>
+
+  <p class="result-count" id="result-count" aria-live="polite"></p>
+
+  <div class="table-container">
+    <table id="compatibility-table" aria-label="Mobile software compatibility">
+      <thead id="table-head"></thead>
+      <tbody id="table-body"></tbody>
+    </table>
+    <p id="no-results">No matching devices or software found.</p>
+  </div>
+
+  <script>
+    "use strict";
+
+    /**
+     * Application state shared across rendering and interaction functions.
+     */
+    const appState = {
+      /** @type {Array<Object>} Full list of phone objects from the API */
+      allPhones: [],
+      /** @type {Array<string>} Ordered software column names */
+      softwareColumns: [],
+      /** @type {number} Index of the currently sorted column (-1 = none) */
+      sortColumnIndex: -1,
+      /** @type {"asc"|"desc"} Current sort direction */
+      sortDirection: "asc",
+      /** @type {string} Current search query (lower-cased) */
+      searchQuery: "",
+    };
+
+    /**
+     * Escape a string for safe insertion into a RegExp constructor.
+     * @param {string} text
+     * @returns {string}
+     */
+    function escapeRegExp(text) {
+      return text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    }
+
+    /**
+     * Test whether a haystack string contains needle as a fuzzy substring.
+     * Each character in needle must appear in order within haystack.
+     * @param {string} haystack
+     * @param {string} needle
+     * @returns {boolean}
+     */
+    function fuzzyMatch(haystack, needle) {
+      if (needle === "") return true;
+      const lowerHaystack = haystack.toLowerCase();
+      const lowerNeedle = needle.toLowerCase();
+      // Fast path: substring match
+      if (lowerHaystack.includes(lowerNeedle)) return true;
+      // Fuzzy path: ordered character match
+      let haystackIndex = 0;
+      for (let needleIndex = 0; needleIndex < lowerNeedle.length; needleIndex++) {
+        const charIndex = lowerHaystack.indexOf(lowerNeedle[needleIndex], haystackIndex);
+        if (charIndex === -1) return false;
+        haystackIndex = charIndex + 1;
+      }
+      return true;
+    }
+
+    /**
+     * Wrap every substring-matched portion of text with a <mark> element.
+     * Falls back to plain text if the needle produces no substring match.
+     * @param {string} text        Original text to annotate.
+     * @param {string} needle      Search term to highlight.
+     * @returns {string}           HTML string with <mark> tags inserted.
+     */
+    function highlightMatch(text, needle) {
+      if (!needle) return escapeHtml(text);
+      const escapedNeedle = escapeRegExp(needle);
+      const regex = new RegExp(`(${escapedNeedle})`, "gi");
+      return escapeHtml(text).replace(regex, '<mark class="search-highlight">$1</mark>');
+    }
+
+    /**
+     * Escape a plain string so it is safe to embed in HTML attribute values
+     * and text content.
+     * @param {string} text
+     * @returns {string}
+     */
+    function escapeHtml(text) {
+      return text
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    /**
+     * Determine whether a phone object matches the current search query.
+     * A match occurs when the query appears (fuzzy) in the phone name, OS,
+     * release year, or any of its software names / version strings.
+     * @param {Object} phone
+     * @param {string} query  Lower-cased search query.
+     * @returns {boolean}
+     */
+    function phoneMatchesQuery(phone, query) {
+      if (query === "") return true;
+      const phoneTextFields = [phone.name, phone.os, phone.released ?? ""];
+      if (phoneTextFields.some(field => fuzzyMatch(field, query))) return true;
+      const softwareEntries = Object.entries(phone.software ?? {});
+      return softwareEntries.some(
+        ([softwareName, version]) =>
+          fuzzyMatch(softwareName, query) || fuzzyMatch(String(version), query)
+      );
+    }
+
+    /**
+     * Retrieve the sort key for a given phone at the given column index.
+     * Column 0 is the phone name; subsequent indices map to softwareColumns.
+     * @param {Object} phone
+     * @param {number} columnIndex
+     * @returns {string}
+     */
+    function getSortKey(phone, columnIndex) {
+      if (columnIndex === 0) return phone.name.toLowerCase();
+      const softwareName = appState.softwareColumns[columnIndex - 1];
+      return String(phone.software?.[softwareName] ?? "").toLowerCase();
+    }
+
+    /**
+     * Return a sorted copy of the phones array based on current sort state.
+     * @param {Array<Object>} phones
+     * @returns {Array<Object>}
+     */
+    function sortPhones(phones) {
+      if (appState.sortColumnIndex < 0) return phones;
+      return [...phones].sort((phoneA, phoneB) => {
+        const keyA = getSortKey(phoneA, appState.sortColumnIndex);
+        const keyB = getSortKey(phoneB, appState.sortColumnIndex);
+        const comparison = keyA.localeCompare(keyB, undefined, { numeric: true });
+        return appState.sortDirection === "asc" ? comparison : -comparison;
+      });
+    }
+
+    /**
+     * Build and inject the <thead> row with sortable column headers.
+     */
+    function renderTableHeader() {
+      const headerRow = document.createElement("tr");
+      const columnLabels = ["Device", ...appState.softwareColumns];
+
+      columnLabels.forEach((label, index) => {
+        const th = document.createElement("th");
+        th.scope = "col";
+        th.setAttribute("role", "columnheader");
+        th.setAttribute("tabindex", "0");
+        th.dataset.columnIndex = index;
+
+        const isSorted = appState.sortColumnIndex === index;
+        if (isSorted) {
+          th.setAttribute("aria-sort", appState.sortDirection === "asc" ? "ascending" : "descending");
+        }
+
+        const sortArrow = isSorted
+          ? (appState.sortDirection === "asc" ? "▲" : "▼")
+          : "⇕";
+
+        th.innerHTML = `${escapeHtml(label)}<span class="sort-indicator" aria-hidden="true">${sortArrow}</span>`;
+
+        th.addEventListener("click", () => handleColumnHeaderClick(index));
+        th.addEventListener("keydown", (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            handleColumnHeaderClick(index);
+          }
+        });
+
+        headerRow.appendChild(th);
+      });
+
+      const thead = document.getElementById("table-head");
+      thead.innerHTML = "";
+      thead.appendChild(headerRow);
+    }
+
+    /**
+     * Build and inject <tbody> rows for each visible (filtered + sorted) phone.
+     */
+    function renderTableBody() {
+      const query = appState.searchQuery;
+      const filteredPhones = appState.allPhones.filter(phone => phoneMatchesQuery(phone, query));
+      const sortedPhones = sortPhones(filteredPhones);
+
+      const tbody = document.getElementById("table-body");
+      tbody.innerHTML = "";
+
+      const noResults = document.getElementById("no-results");
+      const resultCount = document.getElementById("result-count");
+
+      if (sortedPhones.length === 0) {
+        noResults.style.display = "block";
+        resultCount.textContent = "No results";
+        return;
+      }
+
+      noResults.style.display = "none";
+      const total = appState.allPhones.length;
+      const visible = sortedPhones.length;
+      resultCount.textContent = visible < total
+        ? `Showing ${visible} of ${total} devices`
+        : `${total} device${total !== 1 ? "s" : ""}`;
+
+      sortedPhones.forEach(phone => {
+        const row = document.createElement("tr");
+
+        // Device cell
+        const deviceCell = document.createElement("td");
+        deviceCell.innerHTML = `
+          <div class="phone-name">${highlightMatch(phone.name, query)}</div>
+          <div class="phone-os">${highlightMatch(phone.os, query)}${phone.released ? ` · ${highlightMatch(phone.released, query)}` : ""}</div>
+        `;
+        row.appendChild(deviceCell);
+
+        // Software version cells
+        appState.softwareColumns.forEach(softwareName => {
+          const versionCell = document.createElement("td");
+          const version = phone.software?.[softwareName];
+          if (version !== undefined && version !== null) {
+            const highlighted = highlightMatch(String(version), query);
+            versionCell.innerHTML = `<span class="version-tag">${highlighted}</span>`;
+          } else {
+            versionCell.innerHTML = `<span class="version-tag unsupported">N/A</span>`;
+          }
+          row.appendChild(versionCell);
+        });
+
+        tbody.appendChild(row);
+      });
+    }
+
+    /**
+     * Re-render both the header (for updated sort indicators) and the body.
+     */
+    function renderTable() {
+      renderTableHeader();
+      renderTableBody();
+    }
+
+    /**
+     * Handle a click on a column header: toggle sort direction or set new column.
+     * @param {number} columnIndex
+     */
+    function handleColumnHeaderClick(columnIndex) {
+      if (appState.sortColumnIndex === columnIndex) {
+        appState.sortDirection = appState.sortDirection === "asc" ? "desc" : "asc";
+      } else {
+        appState.sortColumnIndex = columnIndex;
+        appState.sortDirection = "asc";
+      }
+      renderTable();
+    }
+
+    /**
+     * Fetch compatibility data from the server API and initialise the table.
+     */
+    async function initialiseApp() {
+      try {
+        const response = await fetch("/api/data");
+        if (!response.ok) {
+          throw new Error(`API request failed with status ${response.status}`);
+        }
+        const data = await response.json();
+        appState.allPhones = data.phones ?? [];
+        appState.softwareColumns = data.software_columns ?? [];
+        renderTable();
+      } catch (error) {
+        console.error("Failed to load compatibility data:", error);
+        document.getElementById("table-body").innerHTML =
+          `<tr><td colspan="100%" style="text-align:center;padding:2rem;color:#dc2626;">
+            Failed to load data. Please refresh the page.
+          </td></tr>`;
+      }
+    }
+
+    // Debounce helper to avoid re-rendering on every keypress
+    function debounce(fn, delayMs) {
+      let timerId;
+      return (...args) => {
+        clearTimeout(timerId);
+        timerId = setTimeout(() => fn(...args), delayMs);
+      };
+    }
+
+    const debouncedRenderTable = debounce(renderTable, 120);
+
+    document.getElementById("search-input").addEventListener("input", (event) => {
+      appState.searchQuery = event.target.value.trim().toLowerCase();
+      debouncedRenderTable();
+    });
+
+    initialiseApp();
+  </script>
+</body>
+</html>
