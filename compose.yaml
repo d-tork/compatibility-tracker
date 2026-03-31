@@ -1,0 +1,13 @@
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - DATA_SOURCE_TYPE=json
+      - JSON_FILE_PATH=/app/data/compatibility.json
+      - FLASK_DEBUG=false
+    volumes:
+      # Mount data directory so the JSON file can be updated without rebuilding
+      - ./data:/app/data:ro
+    restart: unless-stopped

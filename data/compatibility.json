@@ -1,0 +1,220 @@
+{
+  "software_columns": [
+    "WhatsApp",
+    "Spotify",
+    "Google Maps",
+    "Chrome",
+    "Netflix",
+    "Instagram",
+    "TikTok",
+    "Signal",
+    "Slack",
+    "Zoom"
+  ],
+  "phones": [
+    {
+      "name": "Samsung Galaxy S24 Ultra",
+      "os": "Android 14",
+      "released": "2024",
+      "software": {
+        "WhatsApp": "2.24.x",
+        "Spotify": "8.9.x",
+        "Google Maps": "11.x",
+        "Chrome": "121.x",
+        "Netflix": "8.x",
+        "Instagram": "318.x",
+        "TikTok": "34.x",
+        "Signal": "7.x",
+        "Slack": "23.x",
+        "Zoom": "6.x"
+      }
+    },
+    {
+      "name": "Samsung Galaxy S23",
+      "os": "Android 13",
+      "released": "2023",
+      "software": {
+        "WhatsApp": "2.23.x",
+        "Spotify": "8.8.x",
+        "Google Maps": "11.x",
+        "Chrome": "120.x",
+        "Netflix": "8.x",
+        "Instagram": "310.x",
+        "TikTok": "33.x",
+        "Signal": "6.x",
+        "Slack": "22.x",
+        "Zoom": "5.x"
+      }
+    },
+    {
+      "name": "Google Pixel 8 Pro",
+      "os": "Android 14",
+      "released": "2023",
+      "software": {
+        "WhatsApp": "2.24.x",
+        "Spotify": "8.9.x",
+        "Google Maps": "11.x",
+        "Chrome": "121.x",
+        "Netflix": "8.x",
+        "Instagram": "318.x",
+        "TikTok": "34.x",
+        "Signal": "7.x",
+        "Slack": "23.x",
+        "Zoom": "6.x"
+      }
+    },
+    {
+      "name": "Google Pixel 7",
+      "os": "Android 13",
+      "released": "2022",
+      "software": {
+        "WhatsApp": "2.23.x",
+        "Spotify": "8.8.x",
+        "Google Maps": "10.x",
+        "Chrome": "119.x",
+        "Netflix": "7.x",
+        "Instagram": "305.x",
+        "TikTok": "32.x",
+        "Signal": "6.x",
+        "Slack": "22.x",
+        "Zoom": "5.x"
+      }
+    },
+    {
+      "name": "Apple iPhone 15 Pro",
+      "os": "iOS 17",
+      "released": "2023",
+      "software": {
+        "WhatsApp": "24.x",
+        "Spotify": "8.9.x",
+        "Google Maps": "6.x",
+        "Chrome": "121.x",
+        "Netflix": "17.x",
+        "Instagram": "318.x",
+        "TikTok": "34.x",
+        "Signal": "7.x",
+        "Slack": "23.x",
+        "Zoom": "6.x"
+      }
+    },
+    {
+      "name": "Apple iPhone 14",
+      "os": "iOS 16",
+      "released": "2022",
+      "software": {
+        "WhatsApp": "23.x",
+        "Spotify": "8.8.x",
+        "Google Maps": "6.x",
+        "Chrome": "120.x",
+        "Netflix": "16.x",
+        "Instagram": "310.x",
+        "TikTok": "33.x",
+        "Signal": "6.x",
+        "Slack": "22.x",
+        "Zoom": "5.x"
+      }
+    },
+    {
+      "name": "Apple iPhone 13",
+      "os": "iOS 15",
+      "released": "2021",
+      "software": {
+        "WhatsApp": "22.x",
+        "Spotify": "8.7.x",
+        "Google Maps": "5.x",
+        "Chrome": "115.x",
+        "Netflix": "15.x",
+        "Instagram": "295.x",
+        "TikTok": "30.x",
+        "Signal": "5.x",
+        "Slack": "21.x",
+        "Zoom": "5.x"
+      }
+    },
+    {
+      "name": "OnePlus 12",
+      "os": "Android 14",
+      "released": "2024",
+      "software": {
+        "WhatsApp": "2.24.x",
+        "Spotify": "8.9.x",
+        "Google Maps": "11.x",
+        "Chrome": "121.x",
+        "Netflix": "8.x",
+        "Instagram": "318.x",
+        "TikTok": "34.x",
+        "Signal": "7.x",
+        "Slack": "23.x",
+        "Zoom": "6.x"
+      }
+    },
+    {
+      "name": "Xiaomi 14 Pro",
+      "os": "Android 14",
+      "released": "2024",
+      "software": {
+        "WhatsApp": "2.24.x",
+        "Spotify": "8.9.x",
+        "Google Maps": "11.x",
+        "Chrome": "121.x",
+        "Netflix": "8.x",
+        "Instagram": "318.x",
+        "TikTok": "34.x",
+        "Signal": "7.x",
+        "Slack": "23.x",
+        "Zoom": "6.x"
+      }
+    },
+    {
+      "name": "Motorola Edge 40",
+      "os": "Android 13",
+      "released": "2023",
+      "software": {
+        "WhatsApp": "2.23.x",
+        "Spotify": "8.8.x",
+        "Google Maps": "11.x",
+        "Chrome": "119.x",
+        "Netflix": "8.x",
+        "Instagram": "305.x",
+        "TikTok": "32.x",
+        "Signal": "6.x",
+        "Slack": "21.x",
+        "Zoom": "5.x"
+      }
+    },
+    {
+      "name": "Samsung Galaxy A54",
+      "os": "Android 13",
+      "released": "2023",
+      "software": {
+        "WhatsApp": "2.23.x",
+        "Spotify": "8.8.x",
+        "Google Maps": "11.x",
+        "Chrome": "119.x",
+        "Netflix": "8.x",
+        "Instagram": "305.x",
+        "TikTok": "32.x",
+        "Signal": "6.x",
+        "Slack": "21.x",
+        "Zoom": "5.x"
+      }
+    },
+    {
+      "name": "Google Pixel 6a",
+      "os": "Android 12",
+      "released": "2022",
+      "software": {
+        "WhatsApp": "2.22.x",
+        "Spotify": "8.7.x",
+        "Google Maps": "10.x",
+        "Chrome": "105.x",
+        "Netflix": "7.x",
+        "Instagram": "285.x",
+        "TikTok": "28.x",
+        "Signal": "5.x",
+        "Slack": "20.x",
+        "Zoom": "5.x"
+      }
+    }
+  ]
+}
