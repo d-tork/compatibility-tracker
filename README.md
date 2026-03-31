@@ -59,7 +59,7 @@ compatibility-tracker/
 │   └── workflows/
 │       └── ci.yml           # GitHub Actions CI pipeline
 ├── Dockerfile
-├── docker-compose.yml
+├── compose.yaml
 ├── pyproject.toml           # pytest configuration
 ├── requirements.txt         # Production dependencies
 ├── requirements-dev.txt     # Development + testing dependencies
@@ -217,7 +217,7 @@ constructors: dict[str, type[DataLayer]] = {
 }
 ```
 
-Set the environment variables (or update `docker-compose.yml`):
+Set the environment variables (or update `compose.yaml`):
 
 ```bash
 export DATA_SOURCE_TYPE=yaml
