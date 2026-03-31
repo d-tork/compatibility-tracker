@@ -15,6 +15,7 @@ from abc import ABC, abstractmethod
 from typing import Any
 
 from sqlalchemy import create_engine
+from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session
 
 from app.database import get_compatibility_data as _sql_get_data
@@ -82,8 +83,13 @@ class SQLDataLayer(DataLayer):
         SQLDataLayer(database_url="postgresql+psycopg2://user:pass@host:5432/db")
     """
 
-    def __init__(self, database_url: str) -> None:
-        self._engine = create_engine(database_url)
+    def __init__(self, database_url: str | None = None, *, engine: Engine | None = None) -> None:
+        if engine is not None:
+            self._engine = engine
+        elif database_url is not None:
+            self._engine = create_engine(database_url)
+        else:
+            raise ValueError("Either 'database_url' or 'engine' must be provided.")
         init_db(self._engine)
 
     def get_compatibility_data(self) -> dict[str, Any]:

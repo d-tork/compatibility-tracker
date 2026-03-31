@@ -293,8 +293,7 @@ class TestSQLDataLayer:
             )
             session.commit()
 
-        layer = SQLDataLayer.__new__(SQLDataLayer)
-        layer._engine = engine
+        layer = SQLDataLayer(engine=engine)
 
         data = layer.get_compatibility_data()
         assert data["software_columns"] == ["AppAlpha"]
