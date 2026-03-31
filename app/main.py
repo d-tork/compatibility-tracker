@@ -28,10 +28,17 @@ _JSON_FILE_PATH = os.environ.get(
     "JSON_FILE_PATH",
     os.path.join(os.path.dirname(__file__), "..", "data", "compatibility.json"),
 )
+_DATABASE_URL = os.environ.get("DATABASE_URL", "sqlite:///data/compatibility.db")
+
+_layer_kwargs: dict[str, str] = (
+    {"database_url": _DATABASE_URL}
+    if _DATA_SOURCE_TYPE == "sql"
+    else {"json_file_path": _JSON_FILE_PATH}
+)
 
 _data_layer: DataLayer = create_data_layer(
     data_source_type=_DATA_SOURCE_TYPE,
-    json_file_path=_JSON_FILE_PATH,
+    **_layer_kwargs,
 )
 
 

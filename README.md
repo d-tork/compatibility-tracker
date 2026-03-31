@@ -15,12 +15,15 @@ HTML5 + CSS + vanilla JavaScript with **no external dependencies**.
 4. [Quick Start – Local Development](#quick-start--local-development)
 5. [Running Tests](#running-tests)
 6. [Updating the Data](#updating-the-data)
-7. [Upgrading the Data Layer](#upgrading-the-data-layer)
+7. [SQL Database Integration](#sql-database-integration)
+   - [Schema Overview](#schema-overview)
+   - [Example Connection Strings](#example-connection-strings)
+   - [Using the SQL Data Layer](#using-the-sql-data-layer)
+   - [Python Database API](#python-database-api)
+8. [Upgrading the Data Layer](#upgrading-the-data-layer)
    - [Switch to YAML](#switch-to-yaml)
-   - [Switch to a Local SQLite Database](#switch-to-a-local-sqlite-database)
-   - [Switch to a Remote SQL Database](#switch-to-a-remote-sql-database)
-8. [CI/CD](#cicd)
-9. [Contributing](#contributing)
+9. [CI/CD](#cicd)
+10. [Contributing](#contributing)
 
 ---
 
@@ -37,6 +40,8 @@ HTML5 + CSS + vanilla JavaScript with **no external dependencies**.
 - **Dockerized** – single `docker compose up` to run the full stack.
 - **Extensible data layer** – swap JSON → YAML → SQL without touching
   application code.
+- **SQL database support** – SQLAlchemy ORM module with CRUD and upsert
+  operations, compatible with SQLite, PostgreSQL, and other SQL engines.
 
 ---
 
@@ -47,21 +52,24 @@ compatibility-tracker/
 ├── app/
 │   ├── __init__.py          # Package marker
 │   ├── main.py              # Flask application and routes
-│   ├── data_layer.py        # Abstract DataLayer + JSONDataLayer
+│   ├── data_layer.py        # Abstract DataLayer + JSON/SQL implementations
+│   ├── models.py            # SQLAlchemy ORM models
+│   ├── database.py          # Database CRUD and upsert helpers
 │   └── templates/
 │       └── index.html       # Single-page frontend
 ├── data/
-│   └── compatibility.json   # Phone/software compatibility data
+│   └── compatibility.json   # Phone/software compatibility data (JSON backend)
 ├── tests/
 │   ├── __init__.py
-│   └── test_app.py          # pytest unit tests
+│   ├── test_app.py          # pytest unit tests (JSON + routes)
+│   └── test_database.py     # pytest unit tests (SQL models + CRUD)
 ├── .github/
 │   └── workflows/
 │       └── ci.yml           # GitHub Actions CI pipeline
 ├── Dockerfile
 ├── compose.yaml
 ├── pyproject.toml           # pytest configuration
-├── requirements.txt         # Production dependencies
+├── requirements.txt         # Production dependencies (Flask + SQLAlchemy)
 ├── requirements-dev.txt     # Development + testing dependencies
 └── README.md
 ```
@@ -128,7 +136,7 @@ pytest
 pytest --cov=app --cov-report=term-missing
 ```
 
-Tests are located in `tests/test_app.py` and cover:
+Tests are located in `tests/test_app.py` and `tests/test_database.py` and cover:
 
 - `JSONDataLayer` – loading valid JSON, error handling for missing or malformed
   files, and deterministic repeated reads.
@@ -137,6 +145,9 @@ Tests are located in `tests/test_app.py` and cover:
 - `DataLayer` abstract interface – instantiation rules and subclass contract.
 - Flask routes – HTTP status codes, content-type headers, and response body
   contents for both `/` and `/api/data`.
+- SQL models and CRUD – adding software, adding/updating phones, upsert by
+  `(phone_name, os_version)`, and compatibility-data retrieval.
+- `SQLDataLayer` – integration tests using in-memory SQLite.
 
 ---
 
@@ -224,65 +235,116 @@ export DATA_SOURCE_TYPE=yaml
 export YAML_FILE_PATH=/path/to/compatibility.yaml
 ```
 
-### Switch to a Local SQLite Database
+---
 
-Install SQLAlchemy:
+## SQL Database Integration
 
-```bash
-pip install sqlalchemy
-```
+The primary data backend is now a SQL database accessed through
+[SQLAlchemy](https://www.sqlalchemy.org/).  The ORM models live in
+`app/models.py` and the CRUD helpers in `app/database.py`.  The data layer
+abstraction (`app/data_layer.py`) lets you switch between JSON and SQL by
+setting a single environment variable.
 
-Create a `SQLiteDataLayer` (or a generic `SQLAlchemyDataLayer`) subclass that
-queries a `phones` table and a `software_versions` join table, then assembles
-them into the same `{"phones": [...], "software_columns": [...]}` shape the
-frontend expects.
+### Schema Overview
 
-Example table schema:
+Three tables mirror the JSON structure:
 
 ```sql
-CREATE TABLE phones (
-    id        INTEGER PRIMARY KEY,
-    name      TEXT NOT NULL,
-    os        TEXT,
-    released  TEXT
-);
-
+-- Tracked software applications (table columns)
 CREATE TABLE software (
-    id    INTEGER PRIMARY KEY,
-    name  TEXT NOT NULL UNIQUE
+    id    INTEGER PRIMARY KEY AUTOINCREMENT,
+    name  TEXT    NOT NULL UNIQUE
 );
 
+-- Mobile phone models
+CREATE TABLE phones (
+    id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    name      TEXT    NOT NULL,
+    os        TEXT    NOT NULL,
+    released  TEXT    NOT NULL,
+    UNIQUE (name, os)
+);
+
+-- Association: which version of each software a phone supports
 CREATE TABLE phone_software (
-    phone_id    INTEGER REFERENCES phones(id),
-    software_id INTEGER REFERENCES software(id),
+    id          INTEGER PRIMARY KEY AUTOINCREMENT,
+    phone_id    INTEGER NOT NULL REFERENCES phones(id),
+    software_id INTEGER NOT NULL REFERENCES software(id),
     version     TEXT,
-    PRIMARY KEY (phone_id, software_id)
+    UNIQUE (phone_id, software_id)
 );
 ```
 
-Set:
+The `(name, os)` uniqueness constraint on `phones` enables upserts – inserting
+a new phone or updating an existing one by its name and OS version.
+
+### Example Connection Strings
+
+| Database   | Connection String                                          |
+|------------|------------------------------------------------------------|
+| SQLite (file)   | `sqlite:///data/compatibility.db`                     |
+| SQLite (memory) | `sqlite://`                                           |
+| PostgreSQL      | `postgresql+psycopg2://user:pass@host:5432/dbname`   |
+| MySQL / MariaDB | `mysql+pymysql://user:pass@host:3306/dbname`         |
+
+### Using the SQL Data Layer
+
+Set two environment variables (or update `compose.yaml`):
 
 ```bash
-export DATA_SOURCE_TYPE=sqlite
-export DATABASE_URL=sqlite:////absolute/path/to/compatibility.db
+export DATA_SOURCE_TYPE=sql
+export DATABASE_URL=sqlite:///data/compatibility.db
 ```
 
-### Switch to a Remote SQL Database
-
-The approach is identical to SQLite but with a different connection string:
+Then start the application as usual:
 
 ```bash
-# PostgreSQL
-export DATA_SOURCE_TYPE=postgres
-export DATABASE_URL=postgresql://user:password@host:5432/dbname
-
-# MySQL / MariaDB
-export DATA_SOURCE_TYPE=mysql
-export DATABASE_URL=mysql+pymysql://user:password@host:3306/dbname
+python -m app.main
 ```
 
-Use SQLAlchemy's engine to connect; the `DATABASE_URL` is the only
-configuration that changes between environments.
+The `SQLDataLayer` creates tables automatically on startup if they do not
+already exist.
+
+### Python Database API
+
+The module `app/database.py` provides the following helper functions, all of
+which accept a SQLAlchemy `Session`:
+
+| Function            | Description                                                |
+|---------------------|------------------------------------------------------------|
+| `init_db(engine)`   | Create all tables from ORM metadata.                       |
+| `add_software()`    | Insert a new software entry.                               |
+| `get_software_by_name()` | Look up a software entry by name.                     |
+| `add_phone()`       | Insert a new phone row.                                    |
+| `get_phone()`       | Look up a phone by `(name, os)`.                           |
+| `update_phone()`    | Update mutable fields on an existing phone.                |
+| `upsert_phone()`    | Insert or update a phone **and** its software versions.    |
+| `get_compatibility_data()` | Return the full dataset in the JSON-compatible shape. |
+
+**Quick example (SQLite):**
+
+```python
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
+from app.database import init_db, add_software, upsert_phone, get_compatibility_data
+
+engine = create_engine("sqlite:///data/compatibility.db")
+init_db(engine)
+
+with Session(engine) as session:
+    add_software(session, "WhatsApp")
+    add_software(session, "Spotify")
+    upsert_phone(
+        session,
+        name="Pixel 8",
+        os="Android 14",
+        released="2023",
+        software_versions={"WhatsApp": "2.24.x", "Spotify": "8.9.x"},
+    )
+    session.commit()
+    data = get_compatibility_data(session)
+    print(data)
+```
 
 ---
 
